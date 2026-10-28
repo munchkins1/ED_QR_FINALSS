@@ -1,0 +1,41 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2A3F8F"/>
+      <stop offset="55%" stop-color="#162660"/>
+      <stop offset="100%" stop-color="#0E1B45"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Warm Bone app background -->
+  <rect width="1024" height="1024" fill="#F1E4D1"/>
+
+  <!-- Rounded-square QR tile (squircle) -->
+  <rect x="132" y="132" width="760" height="760" rx="200" ry="200" fill="url(#navy)"/>
+  <rect x="132" y="132" width="760" height="760" rx="200" ry="200" fill="url(#sheen)"/>
+
+  <!-- QR glyph (white) -->
+  <g fill="#FFFFFF">
+    <!-- top-left finder -->
+    <rect x="268" y="268" width="180" height="180" rx="24"/>
+    <rect x="316" y="316" width="84" height="84" rx="12" fill="#162660"/>
+    <!-- top-right finder -->
+    <rect x="576" y="268" width="180" height="180" rx="24"/>
+    <rect x="624" y="316" width="84" height="84" rx="12" fill="#162660"/>
+    <!-- bottom-left finder -->
+    <rect x="268" y="576" width="180" height="180" rx="24"/>
+    <rect x="316" y="624" width="84" height="84" rx="12" fill="#162660"/>
+    <!-- data modules -->
+    <rect x="576" y="576" width="72" height="72" rx="10"/>
+    <rect x="684" y="576" width="72" height="72" rx="10"/>
+    <rect x="576" y="684" width="72" height="72" rx="10"/>
+    <rect x="684" y="684" width="72" height="72" rx="10"/>
+    <rect x="508" y="508" width="72" height="72" rx="10"/>
+    <rect x="508" y="700" width="44" height="44" rx="8"/>
+    <rect x="700" y="508" width="44" height="44" rx="8"/>
+  </g>
+</svg>
