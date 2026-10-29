@@ -25,10 +25,10 @@ const HIDDEN_TAB: { display: 'none' } = { display: 'none' };
  * while inactive tabs stay as a muted icon + caption. Both states share the
  * exact same box (size, radius, padding) so switching tabs never shifts the
  * neighbours (zero layout jump):
- *   ┌──────────────────┐
- *   │  icon   (24×24)  │  ← white filled icon when active / muted outline
- *   │  caption (12pt)  │  ← white bold when active / muted when inactive
- *   └──────────────────┘
+ *  ┌──────────────────┐
+ *  │  icon  (24×24)  │  ← white filled icon when active / muted outline
+ *  │  caption (12pt)  │  ← white bold when active / muted when inactive
+ *  └──────────────────┘
  * Each button keeps the navigator's `flex: 1` slot style (so visible tabs
  * split the bar into equal widths) with a small horizontal margin, filling
  * its slice when active. The bar is a warm Bone glass surface.
@@ -72,10 +72,10 @@ const TabButton = memo(function TabButton({
         size={24}
         color={focused ? COLORS.textOnPrimary : COLORS.textSecondary}
       />
-      <Text style={[styles.tabLabel, focused ? styles.tabLabelActive : {}]}>
+      <Text style={[styles.tabLabel, focused ? styles.tabLabelActive : {}]} numberOfLines={1}>
         {tabLabel}
       </Text>
-      {badge && badge > 0 && (
+      {Boolean(badge && badge > 0) && (
         <View style={styles.tabBadge}>
           <Text style={styles.tabBadgeText}>{badge}</Text>
         </View>
@@ -118,7 +118,7 @@ export default function CampusTabsLayout() {
           tabLabel={label}
           iconOutline={iconOutline}
           iconFilled={iconFilled}
-            badge={badge}
+          badge={badge}
         />
       ) : null,
   });
@@ -138,12 +138,10 @@ export default function CampusTabsLayout() {
           backgroundColor: '#FFFFFF',
           borderTopColor: 'rgba(30, 64, 175, 0.10)',
           borderTopWidth: 1,
-          // 58pt button row (6pt top pad + 52pt buttons) + home indicator.
           height: 64 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 6,
           paddingHorizontal: 6,
-          // Soft lift so the bar reads as a surface floating over the scene.
           shadowColor: COLORS.primaryDeep,
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.10,
@@ -217,8 +215,6 @@ export default function CampusTabsLayout() {
         name="appeals"
         options={{
           title: 'Appeals',
-          // Merged into the Monitor tab's "Appeals" segment; the route stays
-          // registered (hidden) for the student deep link from My Attendance.
           ...gatedTab(false, 'Appeals', 'mail-open-outline', 'mail-open'),
         }}
       />
@@ -234,11 +230,6 @@ export default function CampusTabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  /**
-   * Inner content: fills its `flex: 1` slot (minus a small side margin so the
-   * active fill reads as a distinct, rounded surface), centred icon + caption.
-   * Active ⇄ inactive share this exact box so the neighbours never shift.
-   */
   tabTouch: {
     flex: 1,
     minHeight: 48,
@@ -252,7 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.nav,
     backgroundColor: 'transparent',
   },
-  /** Active: the WHOLE button fills Royal Navy (the selected surface). */
   tabTouchActive: {
     backgroundColor: COLORS.primary,
     shadowColor: COLORS.primaryDeep,
@@ -261,15 +251,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-
   tabIconWrap: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabLabel: {
-    fontSize: 12,
-    lineHeight: 14,
+    fontSize: 10,
+    lineHeight: 12,
     fontWeight: '500',
     color: COLORS.textSecondary,
     letterSpacing: 0.2,
@@ -301,5 +290,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-
-

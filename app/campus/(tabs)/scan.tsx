@@ -222,7 +222,7 @@ export default function CampusScanScreen() {
                   accessibilityLabel="Paste event code from clipboard"
                   hitSlop={8}
                 >
-                  <Ionicons name="clipboard-outline" size={20} color="THEME.primaryDeep" />
+                  <Ionicons name="clipboard-outline" size={20} color={COLORS.primaryDeep} />
                 </AnimatedPressable>
               </View>
               <BusyButton title="Check In" loadingTitle="Checking In..." icon="checkmark-outline"
@@ -332,6 +332,7 @@ const styles = StyleSheet.create({
     shadowRadius: 14, elevation: 8,
   },
 });
+
 
 
 

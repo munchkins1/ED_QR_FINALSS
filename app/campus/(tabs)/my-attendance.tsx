@@ -103,7 +103,7 @@ export default function MyAttendanceScreen() {
             <Text style={styles.statLabel}>Late</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={[styles.statValue, { color: 'THEME.danger' }]}>{absent}</Text>
+            <Text style={[styles.statValue, { color: COLORS.danger }]}>{absent}</Text>
             <Text style={styles.statLabel}>Absent</Text>
           </View>
           <View style={styles.statCard}>
@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
   appealApprovedText: { color: COLORS.success },
   appealRejectedText: { color: COLORS.danger },
 });
+
 
 
 

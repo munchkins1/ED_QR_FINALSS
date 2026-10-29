@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
@@ -253,21 +254,24 @@ export default function ManageUsersScreen() {
       <FieldWithIcon icon="search-outline" containerStyle={styles.searchWrap} inputStyle={styles.search}
         iconColor={COLORS.textSecondary} value={search} onChangeText={setSearch}
         placeholder="Search name, email, or ID..." placeholderTextColor={COLORS.textSecondary} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillRow}>
-        {['All', 'Students', 'Teachers', 'Admins', 'Pending'].map((option) => {
-          const active = userFilter === option;
-          return (
-            <AnimatedPressable
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContainer}
+        >
+          {['All', 'Students', 'Teachers', 'Admins', 'Pending'].map((option) => (
+            <TouchableOpacity
               key={option}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[styles.filterButton, userFilter === option && styles.activeFilterButton]}
               onPress={() => setUserFilter(option)}
               accessibilityRole="button"
             >
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{option}</Text>
-            </AnimatedPressable>
-          );
-        })}
-      </ScrollView>
+              <Text style={[styles.filterText, userFilter === option && styles.activeFilterText]}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {filtered.length === 0 ? (
           <EmptyState icon="people-outline" title="No users found..."
@@ -376,7 +380,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, minHeight: 48,
   },
   search: { flex: 1, fontSize: 15, color: COLORS.textPrimary, minHeight: 44 },
-  pillRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 10 },
+  filterWrapper: {
+    marginVertical: 8,
+  },
+  filterScrollContainer: {
+    paddingHorizontal: 16,
+    gap: 8,                    // Creates clean, uniform spacing between buttons
+    alignItems: 'center',
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeFilterButton: {
+    backgroundColor: '#1e3a8a', // Match your primary theme color
+    borderColor: '#1e3a8a',
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  activeFilterText: {
+    color: '#ffffff',
+  },
   list: { paddingHorizontal: 16, paddingTop: SPACING.listTop, paddingBottom: 40, gap: SPACING.cardGap },
   card: { backgroundColor: COLORS.card, borderRadius: 16, borderWidth: 1, borderColor: COLORS.borderSoft, borderTopColor: COLORS.borderSoft, padding: 14 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
@@ -388,15 +421,9 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
   active: { color: COLORS.success, fontWeight: '600' },
   inactive: { color: COLORS.danger, fontWeight: '600' },
-  chip: {
-    minHeight: 40, paddingHorizontal: 14, justifyContent: 'center', borderRadius: 999,
-    borderWidth: 1, borderColor: COLORS.borderSoft, borderTopColor: COLORS.borderSoft, backgroundColor: COLORS.card,
-  },
-  chipActive: { backgroundColor: COLORS.textPrimary, borderColor: COLORS.textPrimary },
-  chipText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary, textTransform: 'capitalize' },
-  chipTextActive: { color: COLORS.textOnPrimary },
-  actions: { flexDirection: 'row', marginTop: 10, gap: SPACING.buttonGap },
-  actionButton: { flex: 1, minHeight: BTN.secondary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, gap: 5, borderRadius: RADIUS.button },
+  actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, gap: 8 },
+  actionButton: { flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 4, borderRadius: 8 },
+  actionButtonText: { fontSize: 11, fontWeight: '600', color: '#ffffff', marginTop: 4 },
   editBtn: { backgroundColor: COLORS.primary },
   deactBtn: { backgroundColor: 'rgba(245,158,11,0.85)' },
   delBtn: { backgroundColor: 'rgba(239,68,68,0.85)' },
@@ -421,6 +448,7 @@ const styles = StyleSheet.create({
   closeButton: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   closeText: { fontSize: 15, fontWeight: '600', color: COLORS.textPrimary },
 });
+
 
 
 

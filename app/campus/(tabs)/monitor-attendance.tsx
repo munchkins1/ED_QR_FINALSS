@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
@@ -63,11 +63,12 @@ export default function MonitorAttendanceScreen() {
     }, [loadEvents])
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      loadRecords();
-    }, [loadRecords])
-  );
+  // Re-fetch records whenever the selected event changes (e.g. user picks a
+  // different event from the dropdown). Chains off loadEvents which sets
+  // selectedId on first focus so records load for the initial event too.
+  useEffect(() => {
+    loadRecords();
+  }, [selectedId, loadRecords]);
 
   useCampusRealtime(
     (change) => {
@@ -110,7 +111,9 @@ export default function MonitorAttendanceScreen() {
           </AnimatedPressable>
         </View>
 
-        <View style={styles.liveCard}>
+
+        {section === 'monitor' && (
+          <View style={styles.liveCard}>
                 <Text style={styles.liveTitle}>
                   Live Check-ins: {records.length}
                 </Text>
@@ -141,6 +144,7 @@ export default function MonitorAttendanceScreen() {
                   </View>
                 </View>
               </View>
+        )}
 
         {section === 'appeals' ? (
           <AppealsPanel showTitle={false} />
@@ -244,6 +248,10 @@ const styles = StyleSheet.create({
   liveNum: { fontSize: 20, fontWeight: '700' },
   liveLabel: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
 });
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import AnimatedPressable from '@/components/AnimatedPressable';
@@ -24,6 +24,15 @@ const STATUS_EDIT_OPTIONS: DropdownOption[] = [
   { label: 'Absent', value: 'absent' },
   { label: 'Excused', value: 'excused' },
 ];
+
+/** Per-option active (touched) colors for the status filter chips. */
+const FILTER_COLORS: Record<AttendanceFilter, string> = {
+  all: COLORS.info,
+  present: COLORS.success,
+  late: '#EA580C',
+  absent: COLORS.danger,
+  excused: COLORS.info,
+};
 
 type Props = {
   records: EventAttendanceRecord[];
@@ -122,17 +131,17 @@ export default function AttendanceRecords({ records, loading, canEdit = false, o
   const editable = canEdit && !readOnly && !overrideMode;
 
   const pills = (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={compactFilters ? styles.filterRowSingle : styles.filterRow}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={compactFilters ? styles.filterRowSingle : styles.filterRow}>
       {ATTENDANCE_FILTERS.map((option) => {
         const active = filter === option;
         return (
           <AnimatedPressable
             key={option}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[styles.chip, active && { backgroundColor: FILTER_COLORS[option], borderColor: FILTER_COLORS[option] }]}
             onPress={() => setFilter(option)}
             accessibilityRole="button"
           >
-            <Text style={[styles.chipText, active && styles.chipTextActive]}>{option}</Text>
+            <Text style={[styles.chipText, active && { color: '#FFFFFF' }]}>{option}</Text>
           </AnimatedPressable>
         );
       })}
@@ -148,11 +157,11 @@ export default function AttendanceRecords({ records, loading, canEdit = false, o
             return (
               <AnimatedPressable
                 key={option}
-                style={[styles.chip, active && styles.chipActive]}
+                style={[styles.chip, active && { backgroundColor: FILTER_COLORS[option], borderColor: FILTER_COLORS[option] }]}
                 onPress={() => setFilter(option)}
                 accessibilityRole="button"
               >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>{option}</Text>
+                <Text style={[styles.chipText, active && { color: '#FFFFFF' }]}>{option}</Text>
               </AnimatedPressable>
             );
           })}
@@ -176,83 +185,45 @@ export default function AttendanceRecords({ records, loading, canEdit = false, o
         </View>
       ) : (
         visible.map((row) => (
-          <View key={row.id} style={styles.card}>
-            <View style={{flex: 1, minWidth: 0}}>
-              <Text style={styles.name}>{row.student?.full_name ?? 'Unknown student'}</Text>
-              <Text style={styles.meta}>{row.student?.student_no}</Text>
-              <Text style={styles.meta}>{row.student?.email}</Text>
-              <Text style={styles.meta}>{formatDateTime(row.recorded_at)}</Text>
+          <View key={row.id} style={styles.cardContainer}>
+            {/* LEFT SIDE: Student Information & Timestamp */}
+            <View style={styles.infoContainer}>
+              <Text style={styles.studentName}>
+                {row.student?.full_name || 'Unknown Student'}
+              </Text>
+              <Text style={styles.studentMeta}>
+                ID: {row.student?.student_no || 'N/A'}
+              </Text>
+              <Text style={styles.studentMeta}>
+                {row.student?.email || 'No email provided'}
+              </Text>
+              <Text style={styles.timestampText}>
+                {row.recorded_at ? new Date(row.recorded_at).toLocaleString() : 'No date/time'}
+              </Text>
             </View>
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 8}}>
-              <View style={[styles.statusBadge, { backgroundColor: statusTone(row.status).bg, borderColor: statusTone(row.status).border }]}>
-                <Text style={[styles.statusText, { color: statusColor(row.status) }]}>{row.status}</Text>
-              </View>
-              {canEdit && !overrideMode ? (
-                <Dropdown
-                  value={pendingStatus[row.id] ?? row.status}
-                  options={STATUS_EDIT_OPTIONS}
-                  onChange={(val) => {
-                    const next = val as AttendanceStatus;
-                    setPendingStatus((p) => ({ ...p, [row.id]: next }));
-                    handleStatusChange(row.id, next);
-                  }}
-                />
-              ) : null}
-              {canEdit ? (
-                <AnimatedPressable
-                  style={styles.deleteButton}
-                  onPress={() => handleDelete(row)}
-                  disabled={busyId === row.id}
-                  accessibilityRole="button"
-                  accessibilityLabel="Delete record"
-                  glowColor={COLORS.danger}
-                >
-                  <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
-                </AnimatedPressable>
-              ) : null}
+
+            {/* RIGHT SIDE: Status Dropdown & Delete Button */}
+            <View style={styles.actionsContainer}>
+              {/* Status Dropdown (Present, Late, Absent, Excused) */}
+              <Dropdown
+                label="Status"
+                value={row.status}
+                options={STATUS_EDIT_OPTIONS}
+                onChange={(val) => handleStatusChange(row.id, val as AttendanceStatus)}
+                disabled={busyId === row.id}
+              />
+
+              {/* Delete Button */}
+              <TouchableOpacity
+                onPress={() => handleDelete(row)}
+                style={styles.deleteButton}
+                disabled={busyId === row.id}
+              >
+                <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
+              </TouchableOpacity>
             </View>
-            {overrideMode ? (
-              <View style={styles.overrideBox}>
-                <Text style={styles.overrideLabel}>Override Status</Text>
-                <View style={styles.overrideRow}>
-                  {(['present', 'absent', 'late', 'excused'] as AttendanceStatus[]).map((s) => {
-                    const selected = (pendingStatus[row.id] ?? row.status) === s;
-                    return (
-                      <AnimatedPressable
-                        key={s}
-                        style={[styles.overrideBtn, selected && { borderColor: statusColor(s), backgroundColor: `${statusColor(s)}22` }]}
-                        onPress={() => setPendingStatus((p) => ({ ...p, [row.id]: s }))}
-                        glowColor={statusColor(s)}
-                        accessibilityRole="button"
-                        accessibilityLabel={s}
-                      >
-                        <Text style={[styles.overrideText, { color: statusColor(s) }]}>{s === 'present' ? 'Present' : s === 'absent' ? 'Absent' : s === 'late' ? 'Late' : 'Excused'}</Text>
-                      </AnimatedPressable>
-                    );
-                  })}
-                </View>
-                <FieldWithIcon
-                  icon="create-outline"
-                  containerStyle={styles.reasonInput}
-                  iconColor={COLORS.textMuted}
-                  value={reasons[row.id] ?? ''}
-                  onChangeText={(v) => setReasons((p) => ({ ...p, [row.id]: v }))}
-                  placeholder="Reason for Correction (optional)"
-                  placeholderTextColor={COLORS.textPlaceholder}
-                />
-                <AnimatedPressable
-                  style={styles.saveBtn}
-                  onPress={() => handleStatusChange(row.id, pendingStatus[row.id] ?? row.status)}
-                  disabled={busyId === row.id}
-                  glowColor={COLORS.primary}
-                  accessibilityRole="button"
-                  accessibilityLabel="Save override"
-                >
-                  <Text style={styles.saveText}>{busyId === row.id ? 'Saving...' : 'Save Override'}</Text>
-                </AnimatedPressable>
-              </View>
-            ) : null}
-          </View>))
+          </View>
+        ))
       )}
     </View>
   );
@@ -260,15 +231,14 @@ export default function AttendanceRecords({ records, loading, canEdit = false, o
 
 const styles = StyleSheet.create({
   hint: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', paddingVertical: 16 },
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  filterRowSingle: { flexDirection: 'row', gap: 8, marginBottom: 12, paddingRight: 8 },
+  filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, paddingHorizontal: 4 },
+  filterRowSingle: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12, paddingHorizontal: 4, paddingRight: 16 },
   chip: {
-    minHeight: 44, paddingHorizontal: 14, justifyContent: 'center', borderRadius: 999,
+    minHeight: 44, paddingHorizontal: 16, justifyContent: 'center', borderRadius: 999,
     backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderWidth: 1,
+    marginRight: 4,
   },
-  chipActive: { backgroundColor: '#1E3A8A', borderColor: '#1E3A8A' },
   chipText: { fontSize: 13, fontWeight: '600', color: '#475569', textTransform: 'capitalize' },
-  chipTextActive: { color: '#FFFFFF' },
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#FFFFFF', borderRadius: 12, borderColor: '#E2E8F0',
@@ -304,6 +274,44 @@ const styles = StyleSheet.create({
   editRow: { flexDirection: 'column', alignItems: 'flex-start', gap: 8, marginTop: 8 },
   editDropdown: { flex: 1 },
   deleteButton: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  cardContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 12,
+    marginVertical: 6,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+  },
+  infoContainer: {
+    flex: 1,
+    marginRight: 8,
+  },
+  studentName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  studentMeta: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  timestampText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 4,
+  },
+  actionsContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
   overrideBox: { marginTop: 10, gap: 8 },
   overrideLabel: { fontSize: 12, fontWeight: '700', color: COLORS.textPrimary },
   overrideRow: { flexDirection: 'row', gap: SPACING.buttonGap, flexWrap: 'wrap' },

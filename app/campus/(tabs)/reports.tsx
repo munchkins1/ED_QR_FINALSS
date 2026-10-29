@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   ScrollView,
   Share,
   StyleSheet,
@@ -18,6 +19,7 @@ import ScreenTransition from '@/components/ScreenTransition';
 import { useToast } from '@/components/CampusToast';
 import { COLORS } from '@/constants/colors';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import {
   PERIOD_OPTIONS,
   fetchAuditLog,
@@ -51,7 +53,26 @@ export default function SystemReportsScreen() {
   const [period, setPeriod] = useState<Period>('all');
   const [summaries, setSummaries] = useState<EventSummary[]>([]);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch everything once on mount
+  useEffect(() => {
+    fetchAllReportData();
+  }, []);
+
+  const fetchAllReportData = async () => {
+    setLoading(true);
+    // Fetch both attendance stats and audit logs concurrently once
+    const [attendanceRes, auditRes] = await Promise.all([
+      supabase.from('attendance').select('*'),
+      supabase.from('audit_logs').select('*')
+    ]);
+    setAttendanceData(attendanceRes.data || []);
+    setAuditLogs(auditRes.data || []);
+    setLoading(false);
+  };
   const [sharing, setSharing] = useState(false);
   const [exportingId, setExportingId] = useState<string | null>(null);
 
@@ -239,7 +260,7 @@ export default function SystemReportsScreen() {
                           accessibilityRole="button"
                           accessibilityLabel={`Export ${summary.name} as CSV`}
                         >
-                          <Ionicons name="download-outline" size={16} color="THEME.onAccent" />
+                          <Ionicons name="download-outline" size={16} color={COLORS.textOnPrimary} />
                           <Text style={styles.exportText}>
                             {exportingId === summary.eventId ? 'Exporting...' : 'Export CSV'}
                           </Text>
@@ -254,18 +275,25 @@ export default function SystemReportsScreen() {
           {isAdmin && mode === 'audit' ? (
             <>
               <Text style={styles.sectionTitle}>System Activity Log</Text>
-              {audit.length === 0 ? (
+              {auditLogs.length === 0 ? (
                 <Text style={styles.hint}>No audit activity yet.</Text>
               ) : (
-                audit.map((entry) => (
-                  <View key={entry.id} style={styles.logCard}>
-                    <Text style={styles.logAction}>{entry.action ?? '(no action)'}</Text>
-                    <Text style={styles.hint}>
-                      {entry.actor ? `${entry.actor.full_name} (${entry.actor.email})` : 'System'} • {entry.entity ?? 'event'}
-                    </Text>
-                    <Text style={styles.hint}>{formatDateTime(entry.created_at)}</Text>
-                  </View>
-                ))
+                <FlatList
+                  data={auditLogs}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <View style={styles.logCard}>
+                      <Text style={styles.logTitle}>{item.action}</Text>
+                      <Text style={styles.logSubtitle}>{item.user_email || (item.actor ? item.actor.email : 'System')} • {item.category || item.entity || 'General'}</Text>
+                      <Text style={styles.logDate}>{new Date(item.created_at).toLocaleString()}</Text>
+                    </View>
+                  )}
+                  initialNumToRender={10}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                  showsVerticalScrollIndicator={false}
+                  scrollEnabled={false}
+                />
               )}
             </>
           ) : null}
@@ -287,8 +315,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.card,
     borderRadius: 14,
-    borderWidth: 1,
-    borderTopColor: COLORS.borderSoft,
+
     padding: 4,
     marginHorizontal: 0,
   },
@@ -304,7 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: 10, // 👈 Changed from 999 to 10 for squarish shape
   },
   segActive: {
-    backgroundColor: COLORS.textPrimary,
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
   },
   segText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
@@ -314,7 +341,7 @@ const styles = StyleSheet.create({
   shareButton: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     minHeight: 44, paddingHorizontal: 16, justifyContent: 'center',
-    borderRadius: 12, backgroundColor: COLORS.textPrimary,
+    borderRadius: 12, backgroundColor: COLORS.primary,
   },
   shareText: { fontSize: 13, fontWeight: '700', color: COLORS.textOnPrimary },
   disabled: { opacity: 0.6 },
@@ -347,7 +374,7 @@ const styles = StyleSheet.create({
   exportBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     minHeight: 40, paddingHorizontal: 14, justifyContent: 'center',
-    borderRadius: 12, backgroundColor: COLORS.textPrimary,
+    borderRadius: 12, backgroundColor: COLORS.primary,
   },
   exportText: { fontSize: 13, fontWeight: '700', color: COLORS.textOnPrimary },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: COLORS.textPrimary, marginTop: 8 },
@@ -356,7 +383,12 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderSoft, borderTopColor: COLORS.borderSoft, padding: 16, gap: 4,
   },
   logAction: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary },
+  logTitle: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary },
+  logSubtitle: { fontSize: 13, color: COLORS.textSecondary },
+  logDate: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
 });
+
+
 
 
 

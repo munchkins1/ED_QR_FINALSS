@@ -221,15 +221,19 @@ const styles = StyleSheet.create({
   actionBtnOuter: { flex: 1 },
   actionBtnText: { color: COLORS.textOnPrimary, fontWeight: '700', fontSize: 15, textAlign: 'center' },
   qrMetaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12 },
-  tipRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' },
-  tipText: { fontSize: 12, color: COLORS.textSecondary, textAlign: 'center' },
+  tipRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start', // Keeps the icon aligned with the first line of text,
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+  },
+  tipText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'left',       // Changes text alignment to left-aligned,
+    lineHeight: 18,
+    flex: 1,                 // Allows the text to wrap properly next to the icon,
+  },
 });
-
-
-
-
-
-
-
-
 

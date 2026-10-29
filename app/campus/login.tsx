@@ -85,7 +85,7 @@ export default function CampusLoginScreen() {
             >
               {/* App mark centered at top */}
               <View style={styles.markWrap}>
-                <AnimatedLogo size={96} iconSize={48} />
+                <AnimatedLogo size={76} iconSize={38} />
               </View>
 
               <Text style={styles.title}>Welcome Back</Text>
@@ -153,12 +153,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 20,
     paddingBottom: 40,
     alignItems: 'center',
   },
   markWrap: {
     alignItems: 'center',
+    marginTop: 20,
     marginBottom: 16,
   },
   title: {
