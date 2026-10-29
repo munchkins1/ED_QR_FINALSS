@@ -281,7 +281,8 @@ export default function AppealsPanel({ showTitle = true }: { showTitle?: boolean
                     <AnimatedPressable style={[styles.reviewBtn, styles.acceptBtn]} onPress={() => handleReview(item, true)} accessibilityRole="button" accessibilityLabel="Approve appeal" glowColor={COLORS.success}>
                       <Text style={styles.reviewText}>Approve</Text>
                     </AnimatedPressable>
-                    <AnimatedPressable style={[styles.reviewBtn, styles.rejectBtn]} onPress={() => handleReview(item, false)} accessibilityRole="button" accessibilityLabel="Decline appeal" glowColor={COLORS.danger}>\n                      <Text style={styles.reviewText}>Reject</Text>
+                    <AnimatedPressable style={[styles.reviewBtn, styles.rejectBtn]} onPress={() => handleReview(item, false)} accessibilityRole="button" accessibilityLabel="Decline appeal" glowColor={COLORS.danger}>
+                      <Text style={styles.reviewText}>Reject</Text>
                     </AnimatedPressable>
                   </View>
                 </View>
